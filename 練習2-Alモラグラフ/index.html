@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>毎日のお小遣いの折れ線グラフ</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1>毎日モラ記録</h1>
+    <div>
+        <label for="dateInput">日付</label>
+        <input type="date" id="dateInput" value="">
+        <label for="allowanceInput">今日のモラ</label>
+        <input type="number" id="allowanceInput">
+        <button onclick="addData()">記録</button>
+    </div>
+    <canvas id="allowanceChart" width="1000" height="500"></canvas>
+
+    <script>
+        const dates = [];
+        const allowances = [];
+        const chartData = [];
+
+        // ページ読み込み時に日付を自動設定
+        document.getElementById('dateInput').valueAsDate = new Date();
+
+        // Chart.jsを使用してグラフを初期化
+        const ctx = document.getElementById('allowanceChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: '所持モラ額の増減',
+                    data: chartData,
+                    borderColor: 'green',
+                    backgroundColor: 'rgba(0, 128, 0, 0.2)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        stepSize: 100 // y軸の目盛りの間隔
+                    }
+                }
+            }
+        });
+
+        // ページ読み込み時にローカルストレージからデータを取得
+        const storedData = JSON.parse(localStorage.getItem('allowanceData')) || [];
+        storedData.forEach(item => {
+            dates.push(item.date);
+            allowances.push(item.allowance);
+            chartData.push(item.allowance);
+        });
+
+        // グラフにデータを追加する関数
+        function addData() {
+            const dateInput = document.getElementById('dateInput').value;
+            const allowanceInput = parseFloat(document.getElementById('allowanceInput').value);
+
+            if (dateInput && allowanceInput) {
+                const newData = { date: dateInput, allowance: allowanceInput };
+
+                // データを追加
+                dates.push(dateInput);
+                allowances.push(allowanceInput);
+                chartData.push(allowanceInput);
+
+                // ローカルストレージにデータを保存
+                const storedData = JSON.parse(localStorage.getItem('allowanceData')) || [];
+                storedData.push(newData);
+                localStorage.setItem('allowanceData', JSON.stringify(storedData));
+
+                // グラフを更新
+                chart.update();
+
+                // 入力フィールドをクリア
+                document.getElementById('dateInput').value = '';
+                document.getElementById('allowanceInput').value = '';
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>
